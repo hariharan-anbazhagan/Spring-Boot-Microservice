@@ -1,0 +1,17 @@
+List<String> names = List.of("Alice", "Bob", "Charlie", "David");
+
+names.stream()
+     .peek(name -> System.out.println("Before modifying: " + name)) // Log each name
+     .map(String::toUpperCase) // Modify names (converts to uppercase)
+     .peek(name -> System.out.println("After modifying: " + name)) // Log modified names
+     .collect(Collectors.toList());
+
+
+Before modifying: Alice
+Before modifying: Bob
+Before modifying: Charlie
+Before modifying: David
+After modifying: ALICE
+After modifying: BOB
+After modifying: CHARLIE
+After modifying: DAVID

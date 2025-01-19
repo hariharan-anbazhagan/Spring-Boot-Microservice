@@ -1,0 +1,130 @@
+@Transactional(rollbackFor = ProductPurchaseException.class)
+public List<ProductPurchaseResponse> purchaseProducts(List<ProductPurchaseRequest> request) {
+    // Extract product IDs from request
+    var productIds = request.stream()
+                            .map(ProductPurchaseRequest::productId)
+                            .toList();
+
+    // Fetch all stored products matching the requested IDs
+    var storedProducts = repository.findAllByIdInOrderById(productIds);
+
+    // Check if all requested products exist in the system
+    if (productIds.size() != storedProducts.size()) {
+        throw new ProductPurchaseException("One or more products do not exist in the inventory");
+    }
+
+    // Sort the request by productId to ensure the order of the products is consistent
+    var sortedRequest = request.stream()
+                               .sorted(Comparator.comparing(ProductPurchaseRequest::productId))
+                               .toList();
+
+    // Prepare to collect the purchased products and track any updates
+    var purchasedProducts = new ArrayList<ProductPurchaseResponse>();
+
+    // Iterate through the stored products and request to handle each purchase
+    for (int i = 0; i < storedProducts.size(); i++) {
+        var product = storedProducts.get(i);
+        var productRequest = sortedRequest.get(i);
+
+        // Check if the requested quantity is available
+        if (product.getAvailableQuantity() < productRequest.quantity()) {
+            // Log insufficient stock for debugging
+            logger.error("Insufficient stock for product ID: {}. Requested: {}, Available: {}",
+                          productRequest.productId(),
+                          productRequest.quantity(),
+                          product.getAvailableQuantity());
+            throw new ProductPurchaseException("Insufficient stock for product ID: " + productRequest.productId());
+        }
+
+        // Update product stock after purchase
+        var newAvailableQuantity = product.getAvailableQuantity() - productRequest.quantity();
+        product.setAvailableQuantity(newAvailableQuantity);
+
+        // Save the updated product in the repository (batch save if supported)
+        repository.save(product);
+
+        // Add the purchased product details to the response list
+        purchasedProducts.add(mapper.toProductPurchaseResponse(product, productRequest.quantity()));
+    }
+
+    // Return the list of purchased products
+    return purchasedProducts;
+}
+
+---------------------------------------------------------------------------------------------------------------
+
+
+@Transactional(rollbackFor = {ProductPurchaseException.class, Exception.class})
+public List<ProductPurchaseResponse> purchaseProducts(List<ProductPurchaseRequest> request) {
+    // Extract product IDs from request
+    var productIds = request.stream()
+                            .map(ProductPurchaseRequest::productId)
+                            .toList();
+
+    // Fetch all stored products matching the requested IDs
+    var storedProducts = repository.findAllByIdInOrderById(productIds);
+
+    // Check if all requested products exist in the system
+    if (productIds.size() != storedProducts.size()) {
+        throw new ProductPurchaseException("One or more products do not exist in the inventory");
+    }
+
+    // Sort the request by productId to ensure the order of the products is consistent
+    var sortedRequest = request.stream()
+                               .sorted(Comparator.comparing(ProductPurchaseRequest::productId))
+                               .toList();
+
+    // Prepare to collect the purchased products and track any updates
+    var purchasedProducts = new ArrayList<ProductPurchaseResponse>();
+    double totalPrice = 0.0;  // To track the total price of purchased products
+
+    // Reserve stock temporarily to avoid race conditions
+    Map<Long, Integer> reservedStock = new HashMap<>();
+
+    // Iterate through the stored products and request to handle each purchase
+    for (int i = 0; i < storedProducts.size(); i++) {
+        var product = storedProducts.get(i);
+        var productRequest = sortedRequest.get(i);
+
+        // Check if the requested quantity is available
+        if (product.getAvailableQuantity() < productRequest.quantity()) {
+            // Log insufficient stock for debugging
+            logger.error("Insufficient stock for product ID: {}. Requested: {}, Available: {}",
+                          productRequest.productId(),
+                          productRequest.quantity(),
+                          product.getAvailableQuantity());
+            throw new ProductPurchaseException("Insufficient stock for product ID: " + productRequest.productId());
+        }
+
+        // Reserve the stock temporarily in case of concurrent transactions
+        reservedStock.put(product.getId(), productRequest.quantity());
+
+        // Update product stock after purchase
+        var newAvailableQuantity = product.getAvailableQuantity() - productRequest.quantity();
+        product.setAvailableQuantity(newAvailableQuantity);
+
+        // Calculate total purchase price (assuming each product has a price)
+        double productPrice = product.getPrice() * productRequest.quantity();
+        totalPrice += productPrice;
+
+        // Save the updated product in the repository (batch save if supported)
+        repository.save(product);
+
+        // Add the purchased product details to the response list
+        purchasedProducts.add(mapper.toProductPurchaseResponse(product, productRequest.quantity()));
+
+        // Log successful purchase for auditing
+        logger.info("Successfully purchased {} of product ID: {}. New stock: {}",
+                    productRequest.quantity(),
+                    productRequest.productId(),
+                    newAvailableQuantity);
+    }
+
+    // Log the total price of the purchase for auditing
+    logger.info("Total purchase price: {}", totalPrice);
+
+    // Return the list of purchased products along with the total price
+    return purchasedProducts.stream()
+                            .peek(response -> response.setTotalPrice(totalPrice)) // Optionally set total price in each response
+                            .collect(Collectors.toList());
+}
