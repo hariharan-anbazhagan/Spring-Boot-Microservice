@@ -1,0 +1,143 @@
+<dependency>
+    <groupId>org.springframework.kafka</groupId>
+    <artifactId>spring-kafka</artifactId>
+    <version>3.0.7</version>
+</dependency>
+
+proudct
+@Configuration
+public class KafkaProducerConfig {
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
+
+    @Bean
+    public Map<String, Object> producerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return props;
+    }
+
+    @Bean
+    public ProducerFactory<String, String> producerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+}
+
+@Service
+public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    private static final String TOPIC = "product-updates";
+
+    public Product updateProduct(Long id, ProductDTO productDTO) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setStock(productDTO.getStock());
+        product.setCategory(productDTO.getCategory());
+        Product updatedProduct = productRepository.save(product);
+
+        // Publish the product update to Kafka
+        String message = String.format("Product updated: %s", updatedProduct.toString());
+        kafkaTemplate.send(TOPIC, message);
+
+        return updatedProduct;
+    }
+}
+
+
+consumer
+
+@Configuration
+public class KafkaConsumerConfig {
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
+
+    @Bean
+    public Map<String, Object> consumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "cart-service-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return props;
+    }
+
+    @Bean
+    public ConsumerFactory<String, String> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs());
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+}
+
+@Service
+public class CartService {
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @KafkaListener(topics = "product-updates", groupId = "cart-service-group")
+    public void listenProductUpdates(String message) {
+        // Log the message
+        System.out.println("Received Kafka message: " + message);
+
+        // Parse the message (you can use JSON for structured data)
+        // Update the cart if necessary (e.g., price or stock changes)
+        // Example logic:
+        // - If product price changes, update totalPrice in cart.
+        // - If stock is 0, remove the product from all carts.
+    }
+}
+product
+spring.kafka.bootstrap-servers=localhost:9092
+consumer
+spring.kafka.bootstrap-servers=localhost:9092
+
+
+Publish JSON Message
+@Autowired
+private ObjectMapper objectMapper;
+
+public void publishProductUpdate(Product product) {
+    try {
+        String jsonMessage = objectMapper.writeValueAsString(product);
+        kafkaTemplate.send("product-updates", jsonMessage);
+    } catch (JsonProcessingException e) {
+        e.printStackTrace();
+    }
+}
+
+Consume JSON Message
+@KafkaListener(topics = "product-updates", groupId = "cart-service-group")
+public void listenProductUpdates(String jsonMessage) {
+    try {
+        Product product = new ObjectMapper().readValue(jsonMessage, Product.class);
+        // Process the product update logic
+    } catch (JsonProcessingException e) {
+        e.printStackTrace();
+    }
+}

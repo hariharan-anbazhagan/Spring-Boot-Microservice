@@ -1,0 +1,214 @@
+@Entity
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String description;
+    private Double price;
+    private Integer stock;
+    private String category;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    // Getters and setters
+}
+
+
+public class ProductDTO {
+    private String name;
+    private String description;
+    private Double price;
+    private Integer stock;
+    private String category;
+
+    // Getters and setters
+}
+
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    List<Product> findByCategoryAndPriceBetween(String category, Double minPrice, Double maxPrice);
+}
+
+
+@Service
+public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    public Product addProduct(ProductDTO productDTO) {
+        Product product = new Product();
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setStock(productDTO.getStock());
+        product.setCategory(productDTO.getCategory());
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(Long id, ProductDTO productDTO) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setStock(productDTO.getStock());
+        product.setCategory(productDTO.getCategory());
+        return productRepository.save(product);
+    }
+
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
+
+    public List<Product> getAllProducts(String category, Double minPrice, Double maxPrice) {
+        return productRepository.findByCategoryAndPriceBetween(category, minPrice, maxPrice);
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+
+    @Autowired
+    private ProductService productService;
+
+    @PostMapping
+    public ResponseEntity<Product> addProduct(@RequestBody ProductDTO productDTO) {
+        return ResponseEntity.ok(productService.addProduct(productDTO));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
+        return ResponseEntity.ok(productService.updateProduct(id, productDTO));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Product>> getAllProducts(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        return ResponseEntity.ok(productService.getAllProducts(category, minPrice, maxPrice));
+    }
+}
+
+
+@Entity
+public class Cart {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long userId;
+    private Long productId;
+    private Integer quantity;
+    private Double totalPrice;
+
+    // Getters and setters
+}
+
+
+@Repository
+public interface CartRepository extends JpaRepository<Cart, Long> {
+    List<Cart> findByUserId(Long userId);
+    Optional<Cart> findByUserIdAndProductId(Long userId, Long productId);
+}
+
+
+@Service
+public class CartService {
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    public Cart addToCart(Long userId, Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Cart cart = cartRepository.findByUserIdAndProductId(userId, productId)
+                .orElse(new Cart());
+
+        cart.setUserId(userId);
+        cart.setProductId(productId);
+        cart.setQuantity(cart.getQuantity() == null ? quantity : cart.getQuantity() + quantity);
+        cart.setTotalPrice(cart.getQuantity() * product.getPrice());
+        return cartRepository.save(cart);
+    }
+
+    public void removeFromCart(Long userId, Long productId) {
+        Cart cart = cartRepository.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        cartRepository.delete(cart);
+    }
+
+    public List<Cart> getCartByUserId(Long userId) {
+        return cartRepository.findByUserId(userId);
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/carts")
+public class CartController {
+
+    @Autowired
+    private CartService cartService;
+
+    @PostMapping
+    public ResponseEntity<Cart> addToCart(
+            @RequestParam Long userId,
+            @RequestParam Long productId,
+            @RequestParam Integer quantity) {
+        return ResponseEntity.ok(cartService.addToCart(userId, productId, quantity));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> removeFromCart(
+            @RequestParam Long userId,
+            @RequestParam Long productId) {
+        cartService.removeFromCart(userId, productId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<Cart>> getCartByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(cartService.getCartByUserId(userId));
+    }
+}
+
+
+
+@Service
+public class ProductClient {
+
+    private final WebClient webClient;
+
+    public ProductClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("http://localhost:8081/api/products").build();
+    }
+
+    public ProductDTO getProductById(Long productId) {
+        return webClient.get()
+                .uri("/{id}", productId)
+                .retrieve()
+                .bodyToMono(ProductDTO.class)
+                .block();
+    }
+}
+--------------------------

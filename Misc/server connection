@@ -1,0 +1,6 @@
+Connection Tab:
+Host: postgres (this is the service name of the PostgreSQL container)
+Port: 5433 (this is the port exposed on your host machine)
+Username: postgres
+Password: harianbu@3
+Maintenance database: hariMart_ms (or leave it empty for the default connection to PostgreSQL)
