@@ -3,21 +3,50 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/hariMart_ms_cart  # Use updated port 5434
+    url: jdbc:postgresql://localhost:5434/hariMart_ms_cart # Updated PostgreSQL port to 5434
     username: postgres
     password: harianbu@3
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 10 # Maximum connections in the connection pool
 
   application:
-    name: cart-service
+    name: cart-service # Name of the application
 
   jpa:
     hibernate:
-      ddl-auto: update
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
+      ddl-auto: update # Automatically updates the schema
+      database-platform: org.hibernate.dialect.PostgreSQLDialect # Hibernate dialect for PostgreSQL
+    show-sql: true # Enables SQL query logging
     properties:
       hibernate:
-        format_sql: true
+        format_sql: true # Formats SQL queries for readability
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Expose all actuator endpoints
+  endpoint:
+    health:
+      show-details: always # Show detailed health information
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true # Register CircuitBreaker with Actuator health
+        sliding-window-size: 10 # Number of calls stored in the window
+        failure-rate-threshold: 50 # Circuit breaker opens when 50% of calls fail
+        wait-duration-in-open-state: 10s # Wait 10 seconds before transitioning to half-open state
+        permitted-number-of-calls-in-half-open-state: 3 # Number of calls allowed in half-open state
+        sliding-window-type: COUNT_BASED # COUNT_BASED or TIME_BASED
+        minimum-number-of-calls: 5 # Minimum calls before failure rate calculation
+        automatic-transition-from-open-to-half-open-enabled: true # Enable automatic transition
+
+    instances:
+      cart-service:
+        base-config: default # Inherit default configuration
+        sliding-window-size: 20 # Custom window size for cart-service
+        failure-rate-threshold: 40 # Custom failure rate threshold for cart-service
+        wait-duration-in-open-state: 15s # Custom wait time in open state for cart-service

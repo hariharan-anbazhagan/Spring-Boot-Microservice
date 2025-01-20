@@ -28,7 +28,6 @@ services:
     restart: unless-stopped
 
 
-
   mongodb:
     image: mongo
     container_name: mongo-HariMart-ms
@@ -55,6 +54,13 @@ services:
     networks:
       - spring-HariMart-ms-net
     restart: unless-stopped
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - spring-HariMart-ms-net
 
 networks:
   spring-HariMart-ms-net:

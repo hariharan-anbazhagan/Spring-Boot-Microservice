@@ -1,0 +1,39 @@
+server:
+  port: 8222 # Port where the gateway runs
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # Enable discovery of services registered in Eureka or other service registries
+      routes:
+        # Route for user-service
+        - id: user-service
+          uri: lb://USER-SERVICE # Load-balanced URI for user-service
+          predicates:
+            - Path=/api/v1/users/** # Routes matching this path are forwarded to user-service
+
+        # Route for cart-service
+        - id: cart-service
+          uri: lb://CART-SERVICE # Load-balanced URI for cart-service
+          predicates:
+            - Path=/api/v1/cart/** # Routes matching this path are forwarded to cart-service
+
+        # Route for product-service
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE # Load-balanced URI for product-service
+          predicates:
+            - Path=/api/v1/products/** # Routes matching this path are forwarded to product-service
+
+        # Route for order-service
+        - id: order-service
+          uri: lb://ORDER-SERVICE # Load-balanced URI for order-service
+          predicates:
+            - Path=/api/v1/orders/** # Routes matching this path are forwarded to order-service
+
+        # Route for inventory-service
+        - id: inventory-service
+          uri: lb://INVENTORY-SERVICE # Load-balanced URI for inventory-service
+          predicates:
+            - Path=/api/v1/inventory/** # Routes matching this path are forwarded to inventory-service

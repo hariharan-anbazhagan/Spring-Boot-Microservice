@@ -21,3 +21,32 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Expose all actuator endpoints
+  endpoint:
+    health:
+      show-details: always # Show detailed health information
+
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-size: 10
+        failure-rate-threshold: 50 # Circuit breaker opens when 50% of calls fail
+        wait-duration-in-open-state: 10s # Duration before transitioning from open to half-open state
+        permitted-number-of-calls-in-half-open-state: 3 # Number of calls allowed in half-open state
+        sliding-window-type: COUNT_BASED # Choose between COUNT_BASED or TIME_BASED
+        minimum-number-of-calls: 5 # Minimum number of calls before failure rate is calculated
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      payment-service:
+        base-config: default
+        sliding-window-size: 20 # Custom size for product-service
+        failure-rate-threshold: 40 # Custom failure rate for product-service
+        wait-duration-in-open-state: 15s # Custom open state duration for product-service
