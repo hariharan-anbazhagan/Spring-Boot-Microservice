@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      username: hariharan
+      password: harianbu
+      host: localhost
+      port: 27017
+      database: HariMart-ms
+      authentication-database: admin
+
+server:
+  port: 8082  # Corrected spacing for port
