@@ -22,6 +22,16 @@ spring:
       hibernate:
         format_sql: true
 
+  flyway:
+    enabled: true               # Enable Flyway migrations
+    baseline-on-migrate: true   # Automatically baseline if no schema history table is found
+    baseline-description: init  # Description for the baseline
+    baseline-version: 0         # Version to start from
+    user: postgres              # Database username
+    password: harianbu@3        # Database password
+    url: jdbc:postgresql://localhost:5434/hariMart_ms_product # JDBC URL to your PostgreSQL database
+
+
 management:
   endpoints:
     web:

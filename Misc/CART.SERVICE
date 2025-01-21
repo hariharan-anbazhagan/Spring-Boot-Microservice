@@ -1,0 +1,60 @@
+package com.example.service;
+
+import com.example.model.Cart;
+import com.example.model.CartItem;
+import com.example.model.Product;
+import com.example.repository.CartRepository;
+import com.example.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CartService {
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    // Add a product to the cart
+    public Cart addProductToCart(Long cartId, Long productId, Integer quantity) {
+        // Retrieve cart and product
+        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Check if the product is available
+        if (product.getIsAvailable()) {
+            // Create a new cart item
+            CartItem cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setQuantity(quantity);
+            cartItem.setPrice(product.getPrice() * quantity);
+
+            // Add the item to the cart
+            cart.getCartItems().add(cartItem);
+            cartRepository.save(cart);
+
+            return cart;
+        } else {
+            throw new RuntimeException("Product is out of stock");
+        }
+    }
+
+    // Get the user's cart
+    public Cart getCart(Long cartId) {
+        return cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+    }
+
+    // Calculate the total price of the cart
+    public Double calculateTotalPrice(Long cartId) {
+        Cart cart = getCart(cartId);
+        double total = 0;
+        for (CartItem item : cart.getCartItems()) {
+            total += item.getPrice();
+        }
+        return total;
+    }
+}
