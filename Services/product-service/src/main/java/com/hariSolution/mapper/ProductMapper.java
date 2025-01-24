@@ -30,6 +30,7 @@ public class ProductMapper {
         product.setDescriptions(productDto.getDescriptions());
         product.setPrice(productDto.getPrice());
         product.setIsAvailable(productDto.getIsAvailable());
+        product.setAvailableQuantity(productDto.getAvailableQuantity());
 
 
         if (StringUtils.isNotBlank(productDto.getCategoryName())) {
@@ -54,6 +55,7 @@ public class ProductMapper {
         productDto.setName(product.getName());
         productDto.setDescriptions(product.getDescriptions());
         productDto.setIsAvailable(product.getIsAvailable());
+        productDto.setAvailableQuantity(product.getAvailableQuantity());
         productDto.setPrice(product.getPrice());
 
         if (product.getCategory() != null) {

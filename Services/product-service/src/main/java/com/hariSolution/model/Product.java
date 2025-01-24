@@ -29,23 +29,26 @@ public class Product implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id", nullable = false, updatable = false, insertable = true)
+    @Column(name = "product_id", nullable = false)
     private Integer id;
 
-    @Column(name = "product_name", nullable = false, updatable = true, insertable = true, length = 100)
+    @Column(name = "product_name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "description", nullable = false, updatable = true, insertable = true, length = 500)
+    @Column(name = "description", nullable = false, length = 500)
     private String descriptions;
 
-    @Column(name = "is_available", nullable = false, updatable = true, insertable = true)
+    @Column(name = "is_available", nullable = false)
     private Boolean isAvailable;
 
-    @Column(name = "price", nullable = false, updatable = true, insertable = true, precision = 10, scale = 2)
+    @Column(name = "available_Quantity", nullable = false)
+    private double availableQuantity;
+
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = true, updatable = true, insertable = true)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(name = "created_date", nullable = false, updatable = false)
@@ -55,5 +58,4 @@ public class Product implements Serializable {
     @Column(name = "modified_date", nullable = false)
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
-
 }

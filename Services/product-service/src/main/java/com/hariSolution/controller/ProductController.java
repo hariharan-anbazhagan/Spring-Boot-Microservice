@@ -1,11 +1,7 @@
 package com.hariSolution.controller;
 
-import com.hariSolution.model.CategoryDto;
-import com.hariSolution.model.CategoryResponse;
-import com.hariSolution.model.ProductRequest;
-import com.hariSolution.model.ProductResponse;
-import com.hariSolution.repository.CategoryRepository;
-import com.hariSolution.repository.ProductRepository;
+import com.hariSolution.model.*;
+
 import com.hariSolution.service.CategoryService;
 import com.hariSolution.service.ProductService;
 import jakarta.validation.Valid;
@@ -37,6 +33,34 @@ public class ProductController {
     @PostMapping("/create-product")
     public ResponseEntity<ProductResponse> createProductDetails(@RequestBody @Valid ProductRequest productRequest){
         ProductResponse response=this.productService.createProductDetails(productRequest);
+        return ResponseEntity.ok(response);
+
+    }
+
+    @GetMapping("/get-allProduct")
+    public ResponseEntity<ProductResponse> getAllProductDetails(){
+        ProductResponse response=this.productService.getAllProductDetails();
+        return ResponseEntity.ok(response);
+
+    }
+    @GetMapping("/get-product/{product-id}")
+    public  ResponseEntity<ProductResponse> getProductById(@PathVariable(value = "product-id") Integer productId){
+        ProductResponse response=this.productService.getProductById(productId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/update-product/{product-id}")
+    public ResponseEntity<ProductResponse> updatedProductDetails(@PathVariable(value = "product-id") Integer productId,
+                                                                 @RequestBody @Valid ProductRequest productRequest){
+        ProductResponse response=this.productService.updatedProductDetails(productId,productRequest);
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    @GetMapping(value = "/get/{product-id}")
+    public ResponseEntity<ProductCartResponse>  findProductById(@PathVariable(value = "product-id") Integer productId){
+        ProductCartResponse response=this.productService.findProductById(productId);
         return ResponseEntity.ok(response);
 
     }

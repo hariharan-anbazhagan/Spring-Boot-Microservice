@@ -10,9 +10,6 @@ spring:
     hikari:
       maximum-pool-size: 10 # Maximum connections in the connection pool
 
-  application:
-    name: cart-service # Name of the application
-
   jpa:
     hibernate:
       ddl-auto: update # Automatically updates the schema
@@ -21,6 +18,10 @@ spring:
     properties:
       hibernate:
         format_sql: true # Formats SQL queries for readability
+
+application:
+  config:
+    product-url: http://localhost:8222/api/v1/products
 
 management:
   endpoints:
@@ -50,3 +51,6 @@ resilience4j:
         sliding-window-size: 20 # Custom window size for cart-service
         failure-rate-threshold: 40 # Custom failure rate threshold for cart-service
         wait-duration-in-open-state: 15s # Custom wait time in open state for cart-service
+
+  application:
+    name: cart-service

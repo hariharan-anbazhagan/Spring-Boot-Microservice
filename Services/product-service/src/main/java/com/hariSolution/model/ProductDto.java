@@ -30,6 +30,9 @@ public class ProductDto implements Serializable {
     @NotNull(message = "Availability status is required")
     private Boolean isAvailable;
 
+    @NotNull(message = "Availability status is required")
+    private Double availableQuantity;
+
     @NotNull(message = "Product price is mandatory")
     @DecimalMin(value = "0.0", inclusive = false, message = "Product price must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Product price must be a valid number with up to 10 digits and 2 decimal places")
