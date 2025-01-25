@@ -1,0 +1,171 @@
+@Entity
+@Table(name = "product_stock")
+public class ProductStock {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    private String productId;
+
+    private String productName;
+
+    private Integer availableQuantity;
+
+    private Integer reservedQuantity;
+
+    private Integer minimumThreshold;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastUpdated;
+
+    // Getters and Setters
+}
+
+
+@Entity
+@Table(name = "stock_transaction")
+public class StockTransaction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    private String productId;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType; // ADD, SALE, RETURN
+
+    private Integer quantity;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date timestamp;
+
+    private String remarks;
+
+    // Getters and Setters
+}
+
+public enum TransactionType {
+    ADD,
+    SALE,
+    RETURN
+}
+
+
+@RestController
+@RequestMapping("/inventory")
+public class InventoryController {
+
+    @Autowired
+    private InventoryService inventoryService;
+
+    // Get available stock for a product
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductStock> getInventory(@PathVariable String productId) {
+        ProductStock productStock = inventoryService.getStockByProductId(productId);
+        if (productStock == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(productStock);
+    }
+
+    // Add or update inventory for a product
+    @PostMapping("/update")
+    public ResponseEntity<String> updateInventory(@RequestBody InventoryUpdateRequest request) {
+        inventoryService.updateStock(request.getProductId(), request.getQuantity());
+        return ResponseEntity.ok("Inventory updated successfully.");
+    }
+
+    // Reduce inventory (e.g., for a sale)
+    @PostMapping("/reduce")
+    public ResponseEntity<String> reduceInventory(@RequestBody InventoryUpdateRequest request) {
+        boolean success = inventoryService.reduceStock(request.getProductId(), request.getQuantity());
+        if (!success) {
+            return ResponseEntity.badRequest().body("Insufficient stock for product: " + request.getProductId());
+        }
+        return ResponseEntity.ok("Inventory reduced successfully.");
+    }
+
+    // Get all stock records (optional, for admin purposes)
+    @GetMapping("/all")
+    public ResponseEntity<List<ProductStock>> getAllInventory() {
+        List<ProductStock> allStock = inventoryService.getAllStock();
+        return ResponseEntity.ok(allStock);
+    }
+}
+
+public class InventoryUpdateRequest {
+
+    private String productId;  // Product ID
+    private int quantity;      // Quantity to add or reduce
+
+    // Getters and Setters
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+}
+
+
+@Service
+public class InventoryService {
+
+    @Autowired
+    private ProductStockRepository productStockRepository;
+
+    // Get stock for a specific product
+    public ProductStock getStockByProductId(String productId) {
+        return productStockRepository.findByProductId(productId);
+    }
+
+    // Add or update stock for a product
+    public void updateStock(String productId, int quantity) {
+        ProductStock stock = productStockRepository.findByProductId(productId);
+        if (stock == null) {
+            stock = new ProductStock();
+            stock.setProductId(productId);
+            stock.setAvailableQuantity(quantity);
+            stock.setLastUpdated(new Date());
+        } else {
+            stock.setAvailableQuantity(stock.getAvailableQuantity() + quantity);
+            stock.setLastUpdated(new Date());
+        }
+        productStockRepository.save(stock);
+    }
+
+    // Reduce stock for a product
+    public boolean reduceStock(String productId, int quantity) {
+        ProductStock stock = productStockRepository.findByProductId(productId);
+        if (stock == null || stock.getAvailableQuantity() < quantity) {
+            return false; // Insufficient stock
+        }
+        stock.setAvailableQuantity(stock.getAvailableQuantity() - quantity);
+        stock.setLastUpdated(new Date());
+        productStockRepository.save(stock);
+        return true;
+    }
+
+    // Get all stock records
+    public List<ProductStock> getAllStock() {
+        return productStockRepository.findAll();
+    }
+}
+
+@Repository
+public interface ProductStockRepository extends JpaRepository<ProductStock, String> {
+    ProductStock findByProductId(String productId);
+}
+
+

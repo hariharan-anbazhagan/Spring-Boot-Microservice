@@ -1,6 +1,8 @@
 package com.hariSolution.service;
 
 import com.hariSolution.Mapper.CartItemMapper;
+import com.hariSolution.exception.ProductAlreadyExists;
+import com.hariSolution.exception.ProductNotFoundException;
 import com.hariSolution.model.CartItem;
 import com.hariSolution.model.ProductDetails;
 import com.hariSolution.product.ProductClient;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +36,19 @@ public class CartItemService {
         if (productDetails == null) {
             logger.error("Product not found for productId: {}", productId);
             throw new ProductNotFoundException("Product not found for ID: " + productId);
+
         }
 
         logger.info("Product details retrieved: {}", productDetails);
+
+        LinkedHashMap<String, Object> responseData = new LinkedHashMap<>();
+
+        if (productDetails.getProductId() !=null){
+
+            CartItem product=this.cartItemRepository.findByProductId(productId);
+
+            throw new ProductAlreadyExists("Product already available in CartItem" + product.getProductId());
+        }
 
         // Populate the CartItem
         CartItem cartItem = new CartItem();
@@ -48,19 +61,16 @@ public class CartItemService {
         cartItem.setSubTotal(productDetails.getPrice().multiply(BigDecimal.valueOf(quantity)));
        // Link the cart to this CartItem
 
-        logger.info("CartItem populated: {}", cartItem);
 
         try {
 
             CartItem savedCartItem = cartItemRepository.save(cartItem);
-            logger.info("CartItem saved successfully: {}", savedCartItem);
-
 
             return cartItemMapper.toProductDetails(savedCartItem);
 
         } catch (Exception e) {
             logger.error("Error saving CartItem for productId: {}", productId, e);
-            throw new RuntimeException("Error saving CartItem", e);  // Optionally define a custom exception for CartItem saving
+            throw new RuntimeException("Error saving CartItem", e);
         }
     }
 }
