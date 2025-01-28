@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -62,6 +64,13 @@ public class ProductController {
     public ResponseEntity<ProductCartResponse>  findProductById(@PathVariable(value = "product-id") Integer productId){
         ProductCartResponse response=this.productService.findProductById(productId);
         return ResponseEntity.ok(response);
+
+    }
+
+    @PostMapping("/purchase")
+    public ResponseEntity<List<ProductPurchaseResponse>>purchaseProducts(@RequestBody List<ProductPurchaseRequest> requests){
+
+        return ResponseEntity.ok(productService.purchaseProducts(requests));
 
     }
 

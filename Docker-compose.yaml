@@ -5,9 +5,9 @@ services:
     image: postgres:latest
     container_name: postgres-HariMart-ms
     environment:
-      - POSTGRES_DB=hariMart_ms
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=harianbu@3
+      POSTGRES_DB: hariMart_ms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: harianbu@3
     ports:
       - "5434:5432"
     networks:
@@ -35,8 +35,8 @@ services:
     volumes:
       - mongo-data:/data/db
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=hariharan
-      - MONGO_INITDB_ROOT_PASSWORD=harianbu
+      MONGO_INITDB_ROOT_USERNAME: hariharan
+      MONGO_INITDB_ROOT_PASSWORD: harianbu
     networks:
       - spring-HariMart-ms-net
     restart: unless-stopped
@@ -47,9 +47,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=hariharan
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=harianbu
-      - ME_CONFIG_MONGODB_SERVER=mongo-HariMart-ms
+      ME_CONFIG_MONGODB_ADMINUSERNAME: hariharan
+      ME_CONFIG_MONGODB_ADMINPASSWORD: harianbu
+      ME_CONFIG_MONGODB_SERVER: mongo-HariMart-ms
     networks:
       - spring-HariMart-ms-net
     restart: unless-stopped
@@ -92,11 +92,20 @@ services:
     networks:
       - spring-HariMart-ms-net
 
+  mail-dev:
+    container_name: ms-mail-dev
+    image: maildev/maildev
+    ports:
+      - "1080:1080" # Web interface
+      - "1025:1025" # SMTP service
+    networks:
+      - spring-HariMart-ms-net
+
 networks:
   spring-HariMart-ms-net:
     driver: bridge
 
 volumes:
-  postgres-data: {}
-  pgadmin-data: {}
-  mongo-data: {}
+  mongo-data:
+  postgres-data:
+  pgadmin-data:

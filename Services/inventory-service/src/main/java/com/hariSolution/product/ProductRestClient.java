@@ -1,7 +1,6 @@
 package com.hariSolution.product;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -26,10 +25,8 @@ public class ProductRestClient {
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<Integer> requestEntity = new HttpEntity<>(productId, headers);
 
-        // ParameterizedTypeReference to handle generic type
         ParameterizedTypeReference<ProductDetails> responseType = new ParameterizedTypeReference<ProductDetails>() {};
 
-        // Exchange the request
         ResponseEntity<ProductDetails> responseEntity = restTemplate.exchange(
                 productUrl + "/get/{product-id}",
                 HttpMethod.GET,

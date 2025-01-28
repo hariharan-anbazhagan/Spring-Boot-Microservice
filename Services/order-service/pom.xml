@@ -132,6 +132,10 @@
 			<version>7.0.4</version>
 			<type>pom</type>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
 
 		<!-- OpenPDF (PDF Generation) -->
 		<dependency>
@@ -141,10 +145,10 @@
 		</dependency>
 
 		<!-- Flyway PostgreSQL (Database Migration) -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
-		</dependency>
+		</dependency>-->
 
 		<!-- Spring Cloud Netflix Eureka Client -->
 		<dependency>
@@ -205,6 +209,14 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
 		</dependency>
 	</dependencies>
 

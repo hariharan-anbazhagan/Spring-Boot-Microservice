@@ -37,3 +37,14 @@ spring:
           uri: lb://INVENTORY-SERVICE # Load-balanced URI for inventory-service
           predicates:
             - Path=/api/v1/inventory/** # Routes matching this path are forwarded to inventory-service
+        # Route for inventory-service
+
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE # Load-balanced URI for payment-service
+          predicates:
+            - Path=/api/v1/payment/** # Routes matching this path are forwarded to payment-service
+
+        - id: order-service
+          uri: lb://ORDER-SERVICE # Load-balanced URI for payment-service
+          predicates:
+            - Path=/api/v1/orders/** # Routes matching this path are forwarded to payment-service

@@ -49,5 +49,11 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/get-user/{user-id}")
+    public UserDto getUserDetailsByUserId(@PathVariable(value = "user-id")Integer userId){
+        return this.userService.getUserDetailsByUserId(userId);
+
+    }
+
 
 }

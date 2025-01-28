@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/hariMart_ms_order  # Use updated port 5434
+    url: jdbc:postgresql://localhost:5434/hariMart_ms_order # Updated port for PostgreSQL
     username: postgres
     password: harianbu@3
     driver-class-name: org.postgresql.Driver
@@ -11,26 +11,25 @@ spring:
       maximum-pool-size: 10
 
   application:
-    name: product-service
+    name: order-service
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # Use 'update' for development only
       database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-
 management:
   endpoints:
     web:
       exposure:
-        include: "*" # Expose all actuator endpoints
+        include: "*" # Exposes all endpoints (use caution in production)
   endpoint:
     health:
-      show-details: always # Show detailed health information
+      show-details: always # Displays detailed health information
 
 resilience4j:
   circuitbreaker:
@@ -38,15 +37,29 @@ resilience4j:
       default:
         register-health-indicator: true
         sliding-window-size: 10
-        failure-rate-threshold: 50 # Circuit breaker opens when 50% of calls fail
-        wait-duration-in-open-state: 10s # Duration before transitioning from open to half-open state
-        permitted-number-of-calls-in-half-open-state: 3 # Number of calls allowed in half-open state
-        sliding-window-type: COUNT_BASED # Choose between COUNT_BASED or TIME_BASED
-        minimum-number-of-calls: 5 # Minimum number of calls before failure rate is calculated
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+        minimum-number-of-calls: 5
         automatic-transition-from-open-to-half-open-enabled: true
     instances:
       order-service:
         base-config: default
-        sliding-window-size: 20 # Custom size for product-service
-        failure-rate-threshold: 40 # Custom failure rate for product-service
-        wait-duration-in-open-state: 15s # Custom open state duration for product-service
+        sliding-window-size: 20 # Custom window size for order-service
+        failure-rate-threshold: 40
+        wait-duration-in-open-state: 15s
+
+kafka:
+  producer:
+    bootstrap-servers: localhost:9092
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      spring.json.type.mapping: orderConfirmation:com.hariSolution.kafkaProducer.OrderConfirmation
+
+application:
+  config:
+    product-url: http://localhost:8222/api/v1/products
+    payment-url: http://localhost:8222/api/v1/payment
+    user-url: http://localhost:8222/api/v1/users

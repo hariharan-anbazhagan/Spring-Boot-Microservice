@@ -1,10 +1,7 @@
 package com.hariSolution.service;
 
 import com.hariSolution.exception.ProductNotFoundException;
-import com.hariSolution.mapper.ProductCartResponseMapper;
-import com.hariSolution.mapper.ProductMapper;
-import com.hariSolution.mapper.ProductRequestMapper;
-import com.hariSolution.mapper.ProductResponseMapper;
+import com.hariSolution.mapper.*;
 import com.hariSolution.model.*;
 import com.hariSolution.repository.ProductRepository;
 import jakarta.validation.Valid;
@@ -13,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,7 +24,9 @@ public class ProductService {
     private final ProductResponseMapper productResponseMapper;
     private final ProductRequestMapper productRequestService;
     private final ProductCartResponseMapper productCartService;
-    public ProductResponse createProductDetails( ProductRequest productRequest) {
+    private final PurchaseProductsMapper purchaseMapper;
+
+    public ProductResponse createProductDetails(ProductRequest productRequest) {
 
         // Convert ProductRequest to ProductDto
         ProductDto productDto = this.productRequestService.toProductDto(productRequest);
@@ -36,7 +36,7 @@ public class ProductService {
 
         // Prepare response data
         LinkedHashMap<String, Object> data = new LinkedHashMap<>();
-        data.put("productDetails:"+product.getId(), productDto);
+        data.put("productDetails:" + product.getId(), productDto);
 
         // Create and return the response
         return this.productResponseMapper.createResponse(
@@ -45,10 +45,6 @@ public class ProductService {
                 HttpStatus.OK.value(),
                 HttpStatus.OK
         );
-
-
-
-
 
 
     }
@@ -102,13 +98,13 @@ public class ProductService {
         Product product = this.productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found"));
 
-        ProductDto productDto=this.productRequestService.toProductDto(productRequest);
+        ProductDto productDto = this.productRequestService.toProductDto(productRequest);
 
-        this.ProductMarge(product,productDto);
+        this.ProductMarge(product, productDto);
 
 
         LinkedHashMap<String, Object> data = new LinkedHashMap<>();
-        data.put("productDetails:"+product.getId(), productDto);
+        data.put("productDetails:" + product.getId(), productDto);
 
         return this.productResponseMapper.createResponse(
                 data,
@@ -119,17 +115,17 @@ public class ProductService {
 
     }
 
-    private void ProductMarge(Product product,ProductDto productDto){
-        if(StringUtils.isNotBlank(productDto.getName())){
+    private void ProductMarge(Product product, ProductDto productDto) {
+        if (StringUtils.isNotBlank(productDto.getName())) {
             product.setName(productDto.getName());
         }
-        if(StringUtils.isNotBlank(productDto.getDescriptions())){
+        if (StringUtils.isNotBlank(productDto.getDescriptions())) {
             product.setDescriptions(productDto.getDescriptions());
         }
-        if(productDto.getIsAvailable() !=null){
+        if (productDto.getIsAvailable() != null) {
             product.setIsAvailable(productDto.getIsAvailable());
         }
-        if(productDto.getPrice()!=null){
+        if (productDto.getPrice() != null) {
             product.setPrice(productDto.getPrice());
         }
         this.productRepository.save(product);
@@ -148,4 +144,39 @@ public class ProductService {
         return this.productCartService.toResponse(product);
     }
 
+    public List<ProductPurchaseResponse> purchaseProducts(List<ProductPurchaseRequest> requests) {
+
+        var productIds = requests.stream().map(ProductPurchaseRequest::getProductId).toList();
+
+        var storedProducts = this.productRepository.findAllByIdInOrderById(productIds);
+
+        if (productIds.size() != storedProducts.size()) {
+            throw new RuntimeException("One or more products does not exist");
+        }
+        var sortedRequest = requests
+                .stream()
+                .sorted(Comparator.comparing(ProductPurchaseRequest::getProductId))
+                .toList();
+
+        List<ProductPurchaseResponse> PurchaseProducts = new ArrayList<>();
+
+        for (int i = 0; i < storedProducts.size(); i++) {
+            var product = storedProducts.get(i);
+            var productRequest = sortedRequest.get(i);
+
+            if (product.getAvailableQuantity() < productRequest.getQuantity()) {
+                throw new RuntimeException("Insufficient stock quantity for product with ID:: " + productRequest.getProductId());
+            }
+            var newAvailableQuantity = product.getAvailableQuantity() - productRequest.getQuantity();
+
+            product.setAvailableQuantity(newAvailableQuantity);
+
+            this.productRepository.save(product);
+            PurchaseProducts.add(this.purchaseMapper.toProductPurchaseResponse(product, productRequest.getProductId()));
+
+
+        }
+
+        return PurchaseProducts;
+    }
 }

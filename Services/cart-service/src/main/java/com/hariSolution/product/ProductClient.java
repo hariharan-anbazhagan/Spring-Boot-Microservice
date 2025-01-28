@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 )
 public interface ProductClient {
 
-    // Corrected the PathVariable annotation and added proper naming consistency.
     @GetMapping(value = "/get/{product-id}")
     ProductDetails getProductFromProductService(@PathVariable("product-id") Integer productId);
 }

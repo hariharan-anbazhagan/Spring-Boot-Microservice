@@ -22,6 +22,14 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: paymentConfirmation:com.hariSolution.Notification.PaymentNotificationRequest
+
 management:
   endpoints:
     web:
@@ -30,7 +38,6 @@ management:
   endpoint:
     health:
       show-details: always # Show detailed health information
-
 
 resilience4j:
   circuitbreaker:

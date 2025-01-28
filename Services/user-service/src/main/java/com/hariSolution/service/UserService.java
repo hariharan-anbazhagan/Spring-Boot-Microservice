@@ -146,4 +146,12 @@ public class UserService {
 
 
     }
+
+
+    public UserDto getUserDetailsByUserId(Integer userId) {
+        User user = this.userRepository.findByUserId(userId);
+
+        return this.userMapper.toDto(user);
+
+    }
 }
