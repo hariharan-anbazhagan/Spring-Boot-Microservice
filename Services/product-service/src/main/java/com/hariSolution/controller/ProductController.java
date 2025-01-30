@@ -73,6 +73,15 @@ public class ProductController {
         return ResponseEntity.ok(productService.purchaseProducts(requests));
 
     }
+    @PostMapping("/purchase-product")
+    public ResponseEntity<ProductPurchaseResponse> ProductPurchase(@RequestBody ProductPurchaseRequest request){
+
+        ProductPurchaseResponse response= this.productService.ProductPurchase(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
 
 

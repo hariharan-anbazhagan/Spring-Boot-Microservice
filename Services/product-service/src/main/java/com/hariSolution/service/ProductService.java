@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -179,4 +180,25 @@ public class ProductService {
 
         return PurchaseProducts;
     }
+
+    public ProductPurchaseResponse ProductPurchase(ProductPurchaseRequest request) {
+
+        var product = this.productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product with ID " + request.getProductId() + " not found."));
+
+
+        if (product.getAvailableQuantity() < request.getQuantity()) {
+            throw new RuntimeException("Insufficient stock quantity for product with ID: " + product.getId());
+        }
+
+        var newAvailableQuantity = product.getAvailableQuantity() - request.getQuantity();
+        product.setAvailableQuantity(newAvailableQuantity);
+
+
+
+        Product updatedProduct = this.productRepository.save(product);
+
+        return this.purchaseMapper.toProductPurchaseResponse(updatedProduct, request.getQuantity());
+    }
+
 }

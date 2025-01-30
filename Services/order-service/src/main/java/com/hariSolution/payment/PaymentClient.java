@@ -18,7 +18,7 @@ public class PaymentClient {
     public void getPaymentDetailsFromPaymentService(PaymentRequest request) {
 
         HttpHeaders headers = new HttpHeaders();
-        //headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
 
         headers.setContentType(MediaType.APPLICATION_JSON);
 

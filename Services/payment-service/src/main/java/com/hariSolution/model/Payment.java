@@ -33,12 +33,15 @@ public class Payment implements Serializable {
     private PaymentMethod paymentMethod;
 
     private Integer orderId;
+    @Column(updatable = false, nullable = false)
+    private Integer userId;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdDate;
 
     @LastModifiedDate
-    @Column(insertable = false)
+    @Column(nullable = false)
     private LocalDateTime lastModifiedDate;
+
 }

@@ -57,3 +57,7 @@ resilience4j:
         sliding-window-size: 20 # Custom size for product-service
         failure-rate-threshold: 40 # Custom failure rate for product-service
         wait-duration-in-open-state: 15s # Custom open state duration for product-service
+
+application:
+  config:
+    user-url: http://localhost:8222/api/v1/users
