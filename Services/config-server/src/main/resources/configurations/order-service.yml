@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/hariMart_ms_order # Updated port for PostgreSQL
+    url: jdbc:postgresql://localhost:5434/hariMart_ms_order  # Ensure PostgreSQL is running on port 5434
     username: postgres
     password: harianbu@3
     driver-class-name: org.postgresql.Driver
@@ -15,21 +15,29 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # Use 'update' for development only
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: update  # Use 'update' only for development
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: orderConfirmation:com.hariSolution.kafka.producer.OrderConfirmation
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*" # Exposes all endpoints (use caution in production)
+        include: "*"  # Expose all actuator endpoints
   endpoint:
     health:
-      show-details: always # Displays detailed health information
+      show-details: always
 
 resilience4j:
   circuitbreaker:
@@ -46,17 +54,9 @@ resilience4j:
     instances:
       order-service:
         base-config: default
-        sliding-window-size: 20 # Custom window size for order-service
+        sliding-window-size: 20
         failure-rate-threshold: 40
         wait-duration-in-open-state: 15s
-
-kafka:
-  producer:
-    bootstrap-servers: localhost:9092
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    properties:
-      spring.json.type.mapping: orderConfirmation:com.hariSolution.kafkaProducer.OrderConfirmation
 
 application:
   config:

@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/hariMart_ms_payment  # Use updated port 5434
+    url: jdbc:postgresql://localhost:5434/hariMart_ms_payment  # Ensure PostgreSQL is running on port 5434
     username: postgres
     password: harianbu@3
     driver-class-name: org.postgresql.Driver
@@ -15,12 +15,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: update  # Use 'update' only for development
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   kafka:
     producer:
@@ -28,16 +28,16 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.type.mapping: paymentConfirmation:com.hariSolution.Notification.PaymentNotificationRequest
+        spring.json.type.mapping: paymentConfirmation:com.hariSolution.kafka.notification.PaymentConfirmation
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*" # Expose all actuator endpoints
+        include: "*"  # Expose all actuator endpoints
   endpoint:
     health:
-      show-details: always # Show detailed health information
+      show-details: always
 
 resilience4j:
   circuitbreaker:
@@ -45,18 +45,18 @@ resilience4j:
       default:
         register-health-indicator: true
         sliding-window-size: 10
-        failure-rate-threshold: 50 # Circuit breaker opens when 50% of calls fail
-        wait-duration-in-open-state: 10s # Duration before transitioning from open to half-open state
-        permitted-number-of-calls-in-half-open-state: 3 # Number of calls allowed in half-open state
-        sliding-window-type: COUNT_BASED # Choose between COUNT_BASED or TIME_BASED
-        minimum-number-of-calls: 5 # Minimum number of calls before failure rate is calculated
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+        minimum-number-of-calls: 5
         automatic-transition-from-open-to-half-open-enabled: true
     instances:
       payment-service:
         base-config: default
-        sliding-window-size: 20 # Custom size for product-service
-        failure-rate-threshold: 40 # Custom failure rate for product-service
-        wait-duration-in-open-state: 15s # Custom open state duration for product-service
+        sliding-window-size: 20
+        failure-rate-threshold: 40
+        wait-duration-in-open-state: 15s
 
 application:
   config:

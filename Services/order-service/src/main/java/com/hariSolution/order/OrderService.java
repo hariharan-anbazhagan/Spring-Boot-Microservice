@@ -1,16 +1,14 @@
 package com.hariSolution.order;
 
 import com.hariSolution.User.UserClient;
-import com.hariSolution.User.UserDetails;
 import com.hariSolution.mapper.OrderDetailsResponseMapper;
 import com.hariSolution.mapper.OrderMapper;
-import com.hariSolution.orderIntem.OrderItem;
 import com.hariSolution.orderIntem.OrderItemRequest;
 import com.hariSolution.orderIntem.OrderItemService;
 import com.hariSolution.payment.PaymentClient;
 import com.hariSolution.payment.PaymentRequest;
-import com.hariSolution.producer.OrderConfirmation;
-import com.hariSolution.producer.OrderProducer;
+import com.hariSolution.kafka.Producer.OrderConfirmation;
+import com.hariSolution.kafka.Producer.OrderProducer;
 import com.hariSolution.product.ProductClient;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -93,7 +91,7 @@ public class OrderService {
 
         System.out.println(orderConfirmation);
 
-      //  this.orderProducer.sendOrderConfirmationMessage(orderConfirmation);
+       this.orderProducer.sendOrderConfirmationMessage(orderConfirmation);
 
         OrderResponse response = this.orderMapper.toOrderResponse(order);
         LinkedHashMap<String, Object> data = new LinkedHashMap<>();

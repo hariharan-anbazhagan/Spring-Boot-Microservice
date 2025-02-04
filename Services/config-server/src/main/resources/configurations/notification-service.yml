@@ -1,24 +1,27 @@
 spring:
   data:
     mongodb:
-      username: hariharan
-      password: harianbu
+      username: harianbu
+      password: harianbu@3
       host: localhost
       port: 27017
       database: HariMart-ms-notification
       authentication-database: admin
 
+security:
+  authorization: enabled
+
 server:
-  port: 8088  # Corrected spacing for port
+  port: 8088
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*" # Expose all actuator endpoints
+        include: "*"
   endpoint:
     health:
-      show-details: always # Show detailed health information
+      show-details: always
 
 resilience4j:
   circuitbreaker:
@@ -26,44 +29,44 @@ resilience4j:
       default:
         register-health-indicator: true
         sliding-window-size: 10
-        failure-rate-threshold: 50 # Circuit breaker opens when 50% of calls fail
-        wait-duration-in-open-state: 10s # Duration before transitioning from open to half-open state
-        permitted-number-of-calls-in-half-open-state: 3 # Number of calls allowed in half-open state
-        sliding-window-type: COUNT_BASED # Choose between COUNT_BASED or TIME_BASED
-        minimum-number-of-calls: 5 # Minimum number of calls before failure rate is calculated
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+        minimum-number-of-calls: 5
         automatic-transition-from-open-to-half-open-enabled: true
     instances:
       notification-service:
         base-config: default
-        sliding-window-size: 20 # Custom size for product-service
-        failure-rate-threshold: 40 # Custom failure rate for product-service
-        wait-duration-in-open-state: 15s # Custom open state duration for product-service
+        sliding-window-size: 20
+        failure-rate-threshold: 40
+        wait-duration-in-open-state: 15s
+
 kafka:
   consumer:
     bootstrap-servers: localhost:9092
-    group-id: paymentGroup,orderGroup
     auto-offset-reset: earliest
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     properties:
-      spring.json.trusted.packages: '*'
-      spring.json.type.mapping: >
-        orderConfirmation:com.hariSolution.order.OrderConfirmation,
-        paymentConfirmation:com.hariSolution.payment.PaymentConfirmation
+      spring.json.trusted.packages: "*"
 
+---
+spring:
+  profiles: order-consumer
 
-mail:
-  host: localhost
-  port: 1025
-  username: hariharan
-  password: harianbu
-  properties:
-    mail:
-      smtp:
-        trust: "*"
-      auth: false # Since MailDev doesn't require authentication
-      starttls:
-        enabled: false # MailDev does not support TLS
-      connectiontimeout: 5000
-      timeout: 3000
-      writetimeout: 5000
+kafka:
+  consumer:
+    group-id: orderGroup
+    properties:
+      spring.json.type.mapping: "orderConfirmation:com.hariSolution.kafkaOrder.order.OrderConfirmation"
+
+---
+spring:
+  profiles: payment-consumer
+
+kafka:
+  consumer:
+    group-id: paymentGroup
+    properties:
+      spring.json.type.mapping: "paymentConfirmation:com.hariSolution.payment.PaymentConfirmation"

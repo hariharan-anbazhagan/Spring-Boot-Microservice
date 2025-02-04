@@ -7,12 +7,11 @@ import com.hariSolution.User.UserDetails;
 import com.hariSolution.model.Payment;
 import com.hariSolution.model.PaymentRequest;
 import com.hariSolution.model.PaymentResponse;
-import com.hariSolution.notification.PaymentConfirmation;
-import com.hariSolution.notification.PaymentProducer;
+import com.hariSolution.kafka.notification.PaymentConfirmation;
+import com.hariSolution.kafka.notification.PaymentProducer;
 import com.hariSolution.repository.PaymentRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
