@@ -1,15 +1,23 @@
 spring:
-  data:
-    mongodb:
-      username: harianbu
-      password: harianbu@3
-      host: localhost
-      port: 27017
-      database: HariMart-ms-notification
-      authentication-database: admin
+  datasource:
+    url: jdbc:postgresql://localhost:5434/notification  # Ensure PostgreSQL is running on port 5434
+    username: postgres
+    password: harianbu@3
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
 
-security:
-  authorization: enabled
+  application:
+    name: notification-service
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Use 'update' only for development
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8088
@@ -52,8 +60,11 @@ kafka:
       spring.json.trusted.packages: "*"
 
 ---
+# Profile-specific configuration for Order Consumer
 spring:
-  profiles: order-consumer
+  config:
+    activate:
+      on-profile: order-consumer
 
 kafka:
   consumer:
@@ -62,8 +73,11 @@ kafka:
       spring.json.type.mapping: "orderConfirmation:com.hariSolution.kafkaOrder.order.OrderConfirmation"
 
 ---
+# Profile-specific configuration for Payment Consumer
 spring:
-  profiles: payment-consumer
+  config:
+    activate:
+      on-profile: payment-consumer
 
 kafka:
   consumer:

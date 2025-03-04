@@ -3,6 +3,7 @@ package com.hariSolution.controller;
 import com.hariSolution.model.StockResponse;
 import com.hariSolution.service.StockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class StockController {
     }
 
     @GetMapping("/get-allStock")
+    @Cacheable(value = "shortLivedCache", key = "#root.methodName")
     public ResponseEntity<StockResponse> getAllStockDetails(){
         StockResponse response=this.stockService.getAllStockDetails();
         return ResponseEntity.ok(response);

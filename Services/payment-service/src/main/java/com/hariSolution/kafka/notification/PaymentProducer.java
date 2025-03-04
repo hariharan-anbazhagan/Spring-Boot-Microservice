@@ -1,22 +1,17 @@
 package com.hariSolution.kafka.notification;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
-@Slf4j  // Enables logging
 public class PaymentProducer {
 
     private final KafkaTemplate<String, PaymentConfirmation> kafkaTemplate;
 
     public void sendMessageToPaymentConfirmation(PaymentConfirmation confirmation) {
-        if (confirmation == null) {
-            log.warn("Attempted to send null PaymentConfirmation message. Ignoring...");
-            return;
-        }
+
 
         /*Message<PaymentConfirmation> message = MessageBuilder
                     .withPayload(confirmation)
@@ -24,6 +19,7 @@ public class PaymentProducer {
                     .build();*/
 
          kafkaTemplate.send("payment-confirmation",confirmation);
+        System.out.println(confirmation);
 
 
     }

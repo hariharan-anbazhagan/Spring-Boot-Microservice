@@ -17,7 +17,6 @@ public class ProductDetails implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
-
     private Integer productId;
     private String name;
     private Boolean isAvailable;

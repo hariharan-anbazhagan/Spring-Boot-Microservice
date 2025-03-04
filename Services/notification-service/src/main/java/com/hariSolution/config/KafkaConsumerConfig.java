@@ -27,7 +27,7 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(JsonDeserializer.TYPE_MAPPINGS, "employeeDetails:com.hariSolution.kafkaOrder.order.OrderConfirmation");
+        props.put(JsonDeserializer.TYPE_MAPPINGS, "orderConfirmation:com.hariSolution.kafkaOrder.order.OrderConfirmation");
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(OrderConfirmation.class, false));
     }
@@ -48,7 +48,7 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(JsonDeserializer.TYPE_MAPPINGS, "employeeDetails:com.hariSolution.payment.PaymentConfirmation");
+        props.put(JsonDeserializer.TYPE_MAPPINGS, "paymentConfirmation:com.hariSolution.payment.PaymentConfirmation");
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(PaymentConfirmation.class, false));
     }

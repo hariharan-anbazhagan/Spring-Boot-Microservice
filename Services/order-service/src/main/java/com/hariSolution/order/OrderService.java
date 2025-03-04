@@ -71,7 +71,8 @@ public class OrderService {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setOrderReference(request.getReference());
         paymentRequest.setPaymentMethod(request.getPaymentMethod());
-        paymentRequest.setAmount(request.getTotalAmount());
+
+
         paymentRequest.setOrderId(order.getId());
         paymentRequest.setUserId(request.getUserId());
         System.out.println(paymentRequest);
