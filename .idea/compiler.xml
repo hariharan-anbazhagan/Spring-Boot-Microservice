@@ -22,7 +22,7 @@
         </processorPath>
         <module name="inventory-service" />
       </profile>
-      <profile name="Annotation profile for payment-service" enabled="true">
+      <profile name="Annotation profile for order-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -34,9 +34,9 @@
         </processorPath>
         <module name="product-service" />
         <module name="cart-service" />
+        <module name="order-service" />
         <module name="payment-service" />
         <module name="user-service" />
-        <module name="order-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -48,14 +48,14 @@
       <module name="cart-service" options="-parameters" />
       <module name="config-server" options="-parameters" />
       <module name="customer-service" options="-parameters" />
-      <module name="gateway-service" options="-parameters" />
+      <module name="gateway-service" options="" />
       <module name="inventory-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
       <module name="order-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
       <module name="product-service" options="-parameters" />
       <module name="service-registry" options="-parameters" />
-      <module name="user-service" options="-parameters" />
+      <module name="user-service" options="" />
     </option>
   </component>
 </project>
